@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 const { Elm } = require("../dist/app.js")
-const app = Elm.Main.worker()
+const app = Elm.Main.init()
 
 const util = require("util")
 const { execSync } = require("child_process")
