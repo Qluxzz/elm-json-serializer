@@ -4,8 +4,8 @@
   "main": "src/Main.js",
   "license": "MIT",
   "scripts": {
-    "start": "[ `$ELM --version` = '0.19.0' ] && $ELM make src/Main.elm --output=dist/app.js && ./src/Main.js -f example/Model.elm -t Model -o example",
-    "install": "[ `$ELM --version` = '0.19.0' ] && $ELM make src/Main.elm --optimize --output=dist/app.js"
+    "start": "elm make src/Main.elm --output=dist/app.js && ./src/Main.js -f example/Model.elm -t Model -o example",
+    "install": "elm make src/Main.elm --optimize --output=dist/app.js"
   },
   "dependencies": {
     "command-exists": "^1.2.6",
@@ -14,5 +14,8 @@
   },
   "bin": {
     "elm-serializer": "src/Main.js"
+  },
+  "devDependencies": {
+    "elm-format": "^0.8.7"
   }
 }
