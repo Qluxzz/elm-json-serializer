@@ -2,11 +2,9 @@
 const { Elm } = require("../dist/app.js")
 const app = Elm.Main.init()
 
-const util = require("util")
 const { execSync } = require("child_process")
 const commandExists = require("command-exists").sync
 const fs = require("fs")
-const shell = require("shelljs")
 var program = require("commander")
 
 if (!commandExists("elm-format")) {
