@@ -58,7 +58,7 @@ const pathGenerator = (name) => {
 }
 
 // Check whether elm.json is present.
-const readElmOptions = () => {
+const elmOptions = (() => {
   try {
     return JSON.parse(fs.readFileSync(`${cwd}/elm.json`))
   } catch (error) {
@@ -71,19 +71,15 @@ const readElmOptions = () => {
     )
     process.exit(1)
   }
-}
+})()
 
-const elmOptions = readElmOptions()
-
-const determineSourceDirectories = () => {
+const sourcePaths = (() => {
   if (elmOptions["type"] === "package") {
     return ["src"]
   } else {
     return elmOptions["source-directories"].map((source) => `${cwd}/${source}`)
   }
-}
-
-const sourcePaths = determineSourceDirectories()
+})()
 
 // Read the first file.
 fs.readFile(completeFilePath, (err, res) => {
