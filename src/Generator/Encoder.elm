@@ -226,6 +226,37 @@ genericTypeEncoder recordName fieldName type_ annotations =
         "Set" ->
             annotationInGenericTypeEncoder recordName fieldName "Encode.set" annotations
 
+        "Dict" ->
+            let
+                -- Key type must be `comparable`
+                --  This includes numbers, characters, strings, lists of comparable things, and tuples of comparable things.
+                keyTypeToString =
+                    List.head annotations
+                        |> Maybe.map
+                            (\kT ->
+                                case Node.value kT of
+                                    Annotation.Typed (Node.Node _ ( _, keyValueType )) [] ->
+                                        case keyValueType of
+                                            "String" ->
+                                                "identity"
+
+                                            "Int" ->
+                                                "String.fromInt"
+
+                                            _ ->
+                                                "Unhandled type"
+
+                                    _ ->
+                                        "Invalid type"
+                            )
+                        |> Maybe.withDefault "Invalid key type"
+            in
+            [ "Encode.dict"
+            , keyTypeToString
+            , annotationInGenericTypeEncoder recordName fieldName "" (List.drop 1 annotations)
+            ]
+                |> String.Extra.spaceJoin
+
         value ->
             "encode" ++ value
 

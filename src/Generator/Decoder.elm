@@ -317,6 +317,19 @@ genericTypeDecoder type_ annotations =
             in
             ( "Decode.map (Array.toList >> Set.fromList) " ++ String.Extra.surroundByParen ("Decode.array" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_)), dependencies )
 
+        "Dict" ->
+            let
+                ( annotations_, dependencies ) =
+                    annotations
+                        -- Ignore key type
+                        -- We only need to provide a decoder for the value type of the dict
+                        |> List.drop 1
+                        |> List.map Node.value
+                        |> List.map typeAnnotationDecoder
+                        |> flattenTuples
+            in
+            ( "Decode.dict" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
+
         value ->
             ( "decode" ++ value, [] )
 
@@ -356,6 +369,9 @@ dependencyIfNotGenericType moduleName type_ =
             []
 
         "Set" ->
+            []
+
+        "Dict" ->
             []
 
         value ->
