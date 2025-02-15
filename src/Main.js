@@ -48,6 +48,13 @@ const cwd = process.cwd()
 const completeFilePath = `${cwd}/${filePath}`
 const completeGeneratedFilePath = `${cwd}/${generatedFilePath}`
 
+if (!fs.existsSync(completeFilePath)) {
+  console.error(
+    `Failed to find file ${filePath}. Please validate the path and try again`
+  )
+  process.exit(1)
+}
+
 const pathGenerator = (name) => {
   const filePathGenerateFolder = `${completeGeneratedFilePath}/${name}`
   return {
