@@ -13,7 +13,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/src/Main.js",
-            "args": ["--file", "tests/src/Test.elm", "--type", "Test", "--output" ,"tests/src"]
+            "args": ["--file", "example/src/Test.elm", "--type", "Test", "--output" ,"example/src"]
         }
     ]
 }
