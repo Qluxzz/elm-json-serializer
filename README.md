@@ -20,22 +20,14 @@ Furthermore, it can not check into `elm-stuff/` at the time, because most of the
 
 # Installation
 
-Elm Serializer uses elm 0.19.0. It is not widely available. So, to avoid limitiation you have to set $ELM to your path before installing this package.
-
-```sh
-export ELM=/path/to/elm/0.19
-```
-
 It's simpler to install it from your local computer:
 
 ```sh
-git clone git@github.com:elm-athlete/elm-json-serializer.git
+git clone git@github.com:Qluxzz/elm-json-serializer.git
 cd elm-json-serializer
 npm install
 npm install -g .
 ```
-
-Because elm@0.19.0 is not yet available, the package is not released on NPM yet. It will be when elm will be available.
 
 # Usage
 
@@ -53,11 +45,11 @@ Two reasons.
 1. Writing `Json.Decode.Decoder` is painful and complicated for newcomers. It's always better to have generators which can't be wrong, because they already are well-tested. They could use it to learn, and before writing their own decoders. It could also be embed into larger frameworks.
 
 2. If you're planning to use elm on your server (yes, you can!), you're planning to share types between frontend and backend. And you probably want to send those types from one side to the other for free. Because, hey! After all we're using the same language everywhere, with the same type system, and the same underlying representation.  
-  While you can just type `JSON.stringify(myFavoriteObject)` and `JSON.parse(myFavoriteObject)` to share objects in JavaScript, you can't do something as simple in elm yet. The only thing you can do is serializing your structures into JSON, and deserializing them into elm after that.
+   While you can just type `JSON.stringify(myFavoriteObject)` and `JSON.parse(myFavoriteObject)` to share objects in JavaScript, you can't do something as simple in elm yet. The only thing you can do is serializing your structures into JSON, and deserializing them into elm after that.
 
-  This is old story.  
+This is old story.
 
-  Now, the only thing you have to do is writing your types, generating decoders and encoders, and throw them over the wire! Everything will be correctly handled on both side!
+Now, the only thing you have to do is writing your types, generating decoders and encoders, and throw them over the wire! Everything will be correctly handled on both side!
 
 # Feedback
 
