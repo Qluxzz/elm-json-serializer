@@ -1,11 +1,14 @@
 module Test exposing (..)
+
 import Dict exposing (Dict)
 
-type alias Foo = 
+
+type alias Foo =
     { a : Int
     , b : List String
     , c : Bool
     }
+
 
 type alias Test =
     { foo : Int
