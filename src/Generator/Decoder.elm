@@ -397,9 +397,6 @@ addTupleMapper annotations =
             3 ->
                 "Decode.map tupleThree"
 
-            4 ->
-                "Decode.map tupleFour"
-
             _ ->
                 "We should add more cases here..."
 
