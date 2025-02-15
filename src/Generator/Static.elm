@@ -13,9 +13,12 @@ jsonDecodeExtra =
     [ "module " ++ moduleName ++ " exposing (..)"
     , "import Json.Decode as Decode exposing (Decoder)"
     , "import Json.Encode as Encode"
+    , "\n"
+    , "\n"
     , andMapFunction
+    , "\n"
     , tupleThreeFunction
-    , tupleFourFunction
+    , "\n"
     , encodeMaybeFunction
     ]
         |> String.Extra.newlineJoin
@@ -32,15 +35,7 @@ andMapFunction =
 tupleThreeFunction : String
 tupleThreeFunction =
     [ "tupleThree : a -> b -> c -> (a, b, c)"
-    , "tupleThree a b c d = Decode.map3 (\\a b c -> (a, b, c))"
-    ]
-        |> String.Extra.newlineJoin
-
-
-tupleFourFunction : String
-tupleFourFunction =
-    [ "tupleFour : a -> b -> c -> d -> (a, b, c, d)"
-    , "tupleFour a b c d = Decode.map4 (\\a b c d -> (a, b, c, d))"
+    , "tupleThree a b c = (a, b, c)"
     ]
         |> String.Extra.newlineJoin
 
