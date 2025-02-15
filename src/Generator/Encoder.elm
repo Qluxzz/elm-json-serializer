@@ -1,185 +1,318 @@
 module Generator.Encoder exposing (..)
 
+import Elm.Syntax.Node as Node
+import Elm.Syntax.Range as Range
 import Elm.Syntax.Type as Type
 import Elm.Syntax.TypeAlias as Alias
 import Elm.Syntax.TypeAnnotation as Annotation
-import Elm.Syntax.Range as Range
-
-import String.Extra as String
 import Shared
+import String.Extra
+
 
 aliasDeclEncoder : String -> Alias.TypeAlias -> String
 aliasDeclEncoder recordName { name, typeAnnotation } =
-  [ "Encode.object"
-  , typeAnnotation
-    |> Tuple.second
-    |> typeAnnotationEncoder recordName ""
-    |> String.surroundByBrackets
-  ]
-  |> String.spaceJoin
-  |> String.surroundByParen
+    [ "Encode.object"
+    , typeAnnotation
+        |> Node.value
+        |> typeAnnotationEncoder recordName ""
+        |> String.Extra.surroundByBrackets
+    ]
+        |> String.Extra.spaceJoin
+        |> String.Extra.surroundByParen
+
 
 generateAliasEncoder : Alias.TypeAlias -> String
 generateAliasEncoder ({ name } as declaration) =
-  let functionName = "encode" ++ name in
-  [ [ functionName, ":", name, "-> Encode.Value" ]
-  , [ functionName, "record =" ]
-  , [ String.indent (aliasDeclEncoder "record" declaration) ]
-  ]
-  |> List.map String.spaceJoin
-  |> String.newlineJoin
+    let
+        functionName =
+            "encode" ++ Node.value name
+    in
+    [ [ functionName, ":", Node.value name, "-> Encode.Value" ]
+    , [ functionName, "record =" ]
+    , [ String.Extra.indent (aliasDeclEncoder "record" declaration) ]
+    ]
+        |> List.map String.Extra.spaceJoin
+        |> String.Extra.newlineJoin
+
 
 generateTypedEncoder : Type.Type -> String
 generateTypedEncoder ({ name } as type_) =
-  let functionName = "encode" ++ name in
-  [ [ functionName, ":", name, "-> Encode.Value" ]
-  , [ functionName, "record =" ]
-  , [ String.indent (generateTypedEncoderHelp type_) ]
-  ]
-  |> List.map String.spaceJoin
-  |> String.newlineJoin
+    let
+        functionName =
+            "encode" ++ Node.value name
+    in
+    [ [ functionName, ":", Node.value name, "-> Encode.Value" ]
+    , [ functionName, "record =" ]
+    , [ String.Extra.indent (generateTypedEncoderHelp type_) ]
+    ]
+        |> List.map String.Extra.spaceJoin
+        |> String.Extra.newlineJoin
+
 
 generateTypedEncoderHelp : Type.Type -> String
 generateTypedEncoderHelp { name, generics, constructors } =
-  [ [ "case record of" ]
-  , constructors
-    |> List.map constructorEncoder
-    |> List.map String.indent
-    |> List.map String.indent
-  ]
-  |> List.map String.newlineJoin
-  |> String.newlineJoin
+    [ [ "case record of" ]
+    , constructors
+        |> List.map Node.value
+        |> List.map constructorEncoder
+        |> List.map String.Extra.indent
+        |> List.map String.Extra.indent
+    ]
+        |> List.map String.Extra.newlineJoin
+        |> String.Extra.newlineJoin
+
 
 caseConstructor : Type.ValueConstructor -> String
 caseConstructor { name, arguments } =
-  let fieldNameForArguments index _ = Shared.indexToFieldName index in
-  [ name
-  , arguments
-    |> List.indexedMap fieldNameForArguments
-    |> String.spaceJoin
-  , "->"
-  ]
-  |> String.spaceJoin
+    let
+        fieldNameForArguments : Int -> b -> String
+        fieldNameForArguments index _ =
+            Shared.indexToFieldName index
+    in
+    [ Node.value name
+    , arguments
+        |> List.indexedMap fieldNameForArguments
+        |> String.Extra.spaceJoin
+    , "->"
+    ]
+        |> String.Extra.spaceJoin
+
 
 constructorBodyEncoder : Type.ValueConstructor -> String
 constructorBodyEncoder { name, arguments } =
-  [ [ String.surroundByQuotes "type"
-    , ","
-    , "Encode.string"
-    , String.surroundByQuotes name
+    [ [ String.Extra.surroundByQuotes "type"
+      , ","
+      , "Encode.string"
+      , String.Extra.surroundByQuotes (Node.value name)
+      ]
+        |> String.Extra.spaceJoin
+        |> String.Extra.surroundByParen
+        |> List.singleton
+    , arguments
+        |> List.indexedMap argumentEncoder
     ]
-    |> String.spaceJoin
-    |> String.surroundByParen
-    |> List.singleton
-  , arguments
-    |> List.indexedMap argumentEncoder
-  ]
-  |> List.concat
-  |> String.join "\n    ,"
-  |> String.surroundByBrackets
+        |> List.concat
+        |> String.join "\n    ,"
+        |> String.Extra.surroundByBrackets
+
 
 constructorEncoder : Type.ValueConstructor -> String
 constructorEncoder ({ name, arguments } as type_) =
-  [ "Encode.object"
-  , constructorBodyEncoder type_
-  ]
-  |> List.map String.indent
-  |> String.join "\n  "
-  |> String.append (caseConstructor type_)
+    [ "Encode.object"
+    , constructorBodyEncoder type_
+    ]
+        |> List.map String.Extra.indent
+        |> String.join "\n  "
+        |> String.append (caseConstructor type_)
 
-argumentEncoder : Int -> (Range.Range, Annotation.TypeAnnotation) -> String
-argumentEncoder index (_, annotation) =
-  let fieldName = Shared.indexToFieldName index in
-  [ String.surroundByQuotes fieldName
-  , encloseArgumentBody fieldName annotation
-  ]
-  |> String.join ", "
-  |> String.surroundByParen
+
+argumentEncoder : Int -> Node.Node Annotation.TypeAnnotation -> String
+argumentEncoder index annotation =
+    let
+        fieldName =
+            Shared.indexToFieldName index
+    in
+    [ String.Extra.surroundByQuotes fieldName
+    , encloseArgumentBody fieldName (Node.value annotation)
+    ]
+        |> String.join ", "
+        |> String.Extra.surroundByParen
+
 
 encloseArgumentBody : String -> Annotation.TypeAnnotation -> String
 encloseArgumentBody fieldName annotation =
-  let annotationEncoderBody = typeAnnotationEncoder fieldName "" annotation in
-  String.spaceJoin <|
-    case annotation of
-      Annotation.Record definition ->
-        [ "Encode.object", String.surroundByBrackets annotationEncoderBody ]
-      Annotation.GenericType type_ -> [ annotationEncoderBody, fieldName ]
-      Annotation.Typed moduleName value annotations -> [ annotationEncoderBody, fieldName ]
-      _ -> []
+    let
+        annotationEncoderBody =
+            typeAnnotationEncoder fieldName "" annotation
+    in
+    String.Extra.spaceJoin <|
+        case annotation of
+            Annotation.Record definition ->
+                [ "Encode.object", String.Extra.surroundByBrackets annotationEncoderBody ]
+
+            Annotation.GenericType type_ ->
+                [ annotationEncoderBody, fieldName ]
+
+            Annotation.Typed _ _ ->
+                [ annotationEncoderBody, fieldName ]
+
+            _ ->
+                []
+
 
 typeAnnotationEncoder : String -> String -> Annotation.TypeAnnotation -> String
 typeAnnotationEncoder recordName fieldName typeAnnotation =
-  case typeAnnotation of
-    Annotation.Record definition -> recordEncoder recordName definition
-    Annotation.GenericType type_ -> genericTypeEncoder recordName fieldName type_ []
-    Annotation.Typed moduleName value annotations -> typedEncoder recordName fieldName moduleName value annotations
-    -- Annotation.Unit ->
-    Annotation.Tupled annotations -> tupleEncoder recordName fieldName annotations
-    -- Annotation.GenericRecord name definition ->
-    -- Annotation.FunctionTypeAnnotation annotation annotation ->
-    _ -> ""
+    case typeAnnotation of
+        Annotation.Record definition ->
+            recordEncoder recordName definition
 
-tupleEncoder : String -> String -> List (Range.Range, Annotation.TypeAnnotation) -> String
+        Annotation.GenericType type_ ->
+            genericTypeEncoder recordName fieldName type_ []
+
+        Annotation.Typed node annotations ->
+            let
+                ( _, value ) =
+                    Node.value node
+            in
+            typedEncoder recordName fieldName value annotations
+
+        -- Annotation.Unit ->
+        Annotation.Tupled annotations ->
+            tupleEncoder recordName fieldName annotations
+
+        -- Annotation.GenericRecord name definition ->
+        -- Annotation.FunctionTypeAnnotation annotation annotation ->
+        _ ->
+            ""
+
+
+tupleEncoder : String -> String -> List (Node.Node Annotation.TypeAnnotation) -> String
 tupleEncoder recordName fieldName annotations =
-  annotations
-  |> List.map Tuple.second
-  |> List.map (typeAnnotationEncoder recordName fieldName)
-  |> List.indexedMap (tupleFieldEncoder recordName fieldName)
-  |> String.join "\n, "
-  |> String.surroundByBrackets
-  |> String.append "Encode.object"
+    annotations
+        |> List.map Node.value
+        |> List.map (typeAnnotationEncoder recordName fieldName)
+        |> List.indexedMap (tupleFieldEncoder recordName fieldName)
+        |> String.join "\n, "
+        |> String.Extra.surroundByBrackets
+        |> String.append "Encode.object"
+
 
 tupleFieldEncoder : String -> String -> Int -> String -> String
 tupleFieldEncoder recordName fieldName index value =
-  String.surroundByParen
-    (String.surroundByQuotes (String.fromInt index) ++ ", " ++ value ++ String.surroundByParen ("Tuple." ++ (if index == 0 then "first" else "second") ++ " " ++ recordName ++ "." ++ fieldName))
+    String.Extra.surroundByParen
+        (String.Extra.surroundByQuotes (String.fromInt index)
+            ++ ", "
+            ++ value
+            ++ String.Extra.surroundByParen
+                ("Tuple."
+                    ++ (if index == 0 then
+                            "first"
 
-genericTypeEncoder : String -> String -> String -> List (Range.Range, Annotation.TypeAnnotation) -> String
+                        else
+                            "second"
+                       )
+                    ++ " "
+                    ++ recordName
+                    ++ "."
+                    ++ fieldName
+                )
+        )
+
+
+genericTypeEncoder : String -> String -> String -> List (Node.Node Annotation.TypeAnnotation) -> String
 genericTypeEncoder recordName fieldName type_ annotations =
-  case type_ of
-    "String" -> "Encode.string"
-    "Int" -> "Encode.int"
-    "Float" -> "Encode.float"
-    "Bool" -> "Encode.bool"
-    "List" ->
-      annotationInGenericTypeEncoder recordName fieldName "Encode.list" annotations
-    "Maybe" ->
-      annotationInGenericTypeEncoder recordName fieldName "encodeMaybe" annotations
-    "Array" ->
-      annotationInGenericTypeEncoder recordName fieldName "Encode.array" annotations
-    "Set" ->
-      annotationInGenericTypeEncoder recordName fieldName "Encode.set" annotations
-    value -> "encode" ++ value
+    case type_ of
+        "String" ->
+            "Encode.string"
 
-annotationInGenericTypeEncoder : String -> String -> String -> List (Range.Range, Annotation.TypeAnnotation) -> String
+        "Int" ->
+            "Encode.int"
+
+        "Float" ->
+            "Encode.float"
+
+        "Bool" ->
+            "Encode.bool"
+
+        "List" ->
+            annotationInGenericTypeEncoder recordName fieldName "Encode.list" annotations
+
+        "Maybe" ->
+            annotationInGenericTypeEncoder recordName fieldName "encodeMaybe" annotations
+
+        "Array" ->
+            annotationInGenericTypeEncoder recordName fieldName "Encode.array" annotations
+
+        "Set" ->
+            annotationInGenericTypeEncoder recordName fieldName "Encode.set" annotations
+
+        "Dict" ->
+            let
+                -- Key type must be `comparable`
+                --  This includes numbers, characters, strings, lists of comparable things, and tuples of comparable things.
+                keyTypeToString =
+                    List.head annotations
+                        |> Maybe.map
+                            (\kT ->
+                                case Node.value kT of
+                                    Annotation.Typed (Node.Node _ ( _, keyValueType )) [] ->
+                                        case keyValueType of
+                                            "String" ->
+                                                "identity"
+
+                                            "Int" ->
+                                                "String.fromInt"
+
+                                            _ ->
+                                                "Unhandled type"
+
+                                    _ ->
+                                        "Invalid type"
+                            )
+                        |> Maybe.withDefault "Invalid key type"
+            in
+            [ "Encode.dict"
+            , keyTypeToString
+            , annotationInGenericTypeEncoder recordName fieldName "" (List.drop 1 annotations)
+            ]
+                |> String.Extra.spaceJoin
+
+        value ->
+            "encode" ++ value
+
+
+annotationInGenericTypeEncoder : String -> String -> String -> List (Node.Node Annotation.TypeAnnotation) -> String
 annotationInGenericTypeEncoder recordName fieldName encoder annotations =
-  annotations
-  |> List.map Tuple.second
-  |> List.map (typeAnnotationEncoder recordName fieldName)
-  |> String.spaceJoin
-  |> String.surroundByParen
-  |> String.append encoder
+    annotations
+        |> List.map Node.value
+        |> List.map (typeAnnotationEncoder recordName fieldName)
+        |> String.Extra.spaceJoin
+        |> String.Extra.surroundByParen
+        |> String.append encoder
 
-typedEncoder : String -> String -> List String -> String -> List (Range.Range, Annotation.TypeAnnotation) -> String
-typedEncoder recordName fieldName moduleName type_ annotations =
-  genericTypeEncoder recordName fieldName type_ annotations
+
+typedEncoder : String -> String -> String -> List (Node.Node Annotation.TypeAnnotation) -> String
+typedEncoder recordName fieldName type_ annotations =
+    genericTypeEncoder recordName fieldName type_ annotations
+
 
 recordEncoder : String -> Annotation.RecordDefinition -> String
 recordEncoder recordName definition =
-  definition
-  |> List.map (recordFieldEncoder recordName)
-  |> String.join "\n, "
+    definition
+        |> List.map Node.value
+        |> List.map (recordFieldEncoder recordName)
+        |> String.join "\n, "
+
 
 isTuple : Annotation.TypeAnnotation -> Bool
 isTuple annotation =
-  case annotation of
-    Annotation.Tupled _ -> True
-    _ -> False
+    case annotation of
+        Annotation.Tupled _ ->
+            True
 
-recordFieldEncoder : String -> (String, (Range.Range, Annotation.TypeAnnotation)) -> String
-recordFieldEncoder recordName (name, (_, content)) =
-  [ String.surroundByQuotes name
-  , String.surroundByParen ((typeAnnotationEncoder recordName name content) ++ (if isTuple content then "" else " " ++ recordName ++ "." ++ name))
-  ]
-  |> String.join ", "
-  |> String.surroundByParen
+        _ ->
+            False
+
+
+recordFieldEncoder : String -> Annotation.RecordField -> String
+recordFieldEncoder recordName recordField =
+    let
+        name =
+            Node.value (Tuple.first recordField)
+
+        content =
+            Tuple.second recordField
+    in
+    [ String.Extra.surroundByQuotes name
+    , String.Extra.surroundByParen
+        (typeAnnotationEncoder recordName name (Node.value content)
+            ++ (if isTuple (Node.value content) then
+                    ""
+
+                else
+                    " " ++ recordName ++ "." ++ name
+               )
+        )
+    ]
+        |> String.join ", "
+        |> String.Extra.surroundByParen
