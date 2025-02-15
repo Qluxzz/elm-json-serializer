@@ -153,16 +153,20 @@ addReadFilesToRawFiles ( content, moduleName ) ( model_, cmds ) =
 
 writeGeneratedFiles : Model -> Dict ModuleName DecodersEncoders -> Cmd Msg
 writeGeneratedFiles model filesContent =
-    filesContent
-        |> Dict.toList
-        |> List.map (writeFileContent model)
-        |> List.append
-            [ writeStaticFile
-                ( Generator.Static.moduleName
-                , Generator.Static.jsonDecodeExtra
-                )
-            ]
-        |> Cmd.batch
+    if Dict.isEmpty filesContent then
+        Cmd.none
+
+    else
+        filesContent
+            |> Dict.toList
+            |> List.map (writeFileContent model)
+            |> List.append
+                [ writeStaticFile
+                    ( Generator.Static.moduleName
+                    , Generator.Static.jsonDecodeExtra
+                    )
+                ]
+            |> Cmd.batch
 
 
 writeFileContent : Model -> ( ModuleName, DecodersEncoders ) -> Cmd Msg
