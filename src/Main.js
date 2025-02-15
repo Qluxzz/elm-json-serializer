@@ -187,5 +187,5 @@ app.ports.writeStaticFile.subscribe(([fileName, content]) => {
   const fullPath = `${cwd}/${generatedFilePath}/${paths.join("/")}`
   fs.mkdirSync(fullPath, { recursive: true })
   fs.writeFileSync(`${fullPath}/${extra}.elm`, content)
-  execSync(`elm-format ${fullPath}/${extra}.elm --yes`)
+  execSync(`npx elm-format ${fullPath}/${extra}.elm --yes`)
 })
