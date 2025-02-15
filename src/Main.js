@@ -92,7 +92,7 @@ app.ports.theresAnErrorDude.subscribe((value) => {
 })
 
 // Exit the app when asked.
-app.ports.killMePleaseKillMe.subscribe((value) => {
+app.ports.killMePleaseKillMe.subscribe(() => {
   process.exit(0)
 })
 
@@ -133,13 +133,10 @@ const readFileOrNull = (name) => {
 }
 
 const checkDependencyExists = (tuples) => {
-  const moduleName = tuples
-    .map(([elem, moduleName]) => moduleName)
-    .reduce((acc, elem) => elem, "")
-  const results = tuples.map(([elem]) => !(elem === null))
+  const firstModuleName = tuples[0][1][0]
 
-  if (!new Set(results).has(true)) {
-    console.error(`Unable to find the dependency ${moduleName}.`)
+  if (!tuples.some(([elem]) => !(elem === null))) {
+    console.error(`Unable to find the dependency ${firstModuleName}.`)
     process.exit(1)
   }
 
@@ -154,7 +151,7 @@ const flattenDependencies = (acc, [elem, moduleName]) => {
   }
 }
 
-const convertModuleName = ([pathModuleName, moduleName]) => {
+const convertModuleName = ([, moduleName]) => {
   return sourcePaths.map((sourcePath) => {
     return [`${sourcePath}/${moduleName}.elm`, moduleName]
   })
@@ -168,7 +165,7 @@ const readFiles = (tuples) => {
 
 app.ports.readThoseFiles.subscribe((moduleNames) => {
   const newModules = moduleNames
-    .map((moduleName) => [moduleName.split(".").join("/"), moduleName])
+    .map((moduleName) => [moduleName.join("/"), moduleName])
     .map(convertModuleName)
     .map(readFiles)
     .map(checkDependencyExists)
@@ -181,7 +178,7 @@ app.ports.writeStaticFile.subscribe(([fileName, content]) => {
   const paths = fileName.split(".")
   const extra = paths.pop()
   const fullPath = `${cwd}/${generatedFilePath}/${paths.join("/")}`
-  shell.mkdir("-p", fullPath)
+  fs.mkdirSync(fullPath, { recursive: true })
   fs.writeFileSync(`${fullPath}/${extra}.elm`, content)
   execSync(`elm-format ${fullPath}/${extra}.elm --yes`)
 })
