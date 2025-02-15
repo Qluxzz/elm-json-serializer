@@ -8,12 +8,12 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
+            "name": "Debug generation of example model",
             "skipFiles": [
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}/src/Main.js",
-            "args": ["--file", "example/src/Test.elm", "--type", "Test", "--output" ,"example/src"]
+            "args": ["--file", "tests/src/Test.elm", "--type", "Test", "--output" ,"tests/src"]
         }
     ]
 }
