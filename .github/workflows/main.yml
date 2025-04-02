@@ -1,0 +1,24 @@
+on:
+  push:
+    branches:
+      - "master"
+
+jobs:
+  test:
+    name: Run test suite
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jorelali/setup-elm@v6
+        with:
+          elm-version: 0.19.1
+
+      - name: Run elm tests
+        run: npx elm-test --report="junit" > test-results.xml
+
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "test-results.xml"
+        if: always()
