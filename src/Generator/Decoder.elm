@@ -331,7 +331,7 @@ genericTypeDecoder type_ annotations =
             ( "Decode.dict" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
         value ->
-            ( "decode" ++ value, [] )
+            ( "UNHANDLED TYPE: " ++ value, [] )
 
 
 typedDecoder :
