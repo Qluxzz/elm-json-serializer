@@ -1,48 +1,63 @@
-module String.Extra
-  exposing
+module String.Extra exposing
     ( camelize
     , indent
-    , spaceJoin
     , newline
     , newlineJoin
+    , spaceJoin
+    , surroundByBrackets
     , surroundByParen
     , surroundByQuotes
-    , surroundByBrackets
     )
+
 
 camelize : String -> String
 camelize value =
-  value
-  |> String.toList
-  |> lowercaseFirst
-  |> String.fromList
+    value
+        |> String.toList
+        |> lowercaseFirst
+        |> String.fromList
+
 
 lowercaseFirst : List Char -> List Char
 lowercaseFirst chars =
-  case chars of
-    hd :: tl -> Char.toLower hd :: tl
-    [] -> []
+    case chars of
+        hd :: tl ->
+            Char.toLower hd :: tl
+
+        [] ->
+            []
+
 
 indent : String -> String
-indent = (++) " "
+indent =
+    (++) " "
+
 
 spaceJoin : List String -> String
-spaceJoin = String.join " "
+spaceJoin =
+    String.join " "
+
 
 newlineJoin : List String -> String
-newlineJoin = String.join "\n"
+newlineJoin =
+    String.join "\n"
+
 
 newline : String -> String
-newline = (++) "\n"
+newline =
+    (++) "\n"
+
 
 surroundByQuotes : String -> String
 surroundByQuotes value =
-  "\"" ++ value ++ "\""
+    "\"" ++ value ++ "\""
+
 
 surroundByParen : String -> String
 surroundByParen value =
-  "(" ++ value ++ ")"
+    "(" ++ value ++ ")"
+
 
 surroundByBrackets : String -> String
 surroundByBrackets value =
-  "[" ++ value ++ "]"
+    "[" ++ value ++ "]"
