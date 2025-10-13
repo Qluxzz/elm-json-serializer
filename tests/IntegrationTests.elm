@@ -11,7 +11,7 @@ import Test exposing (Test, describe, test)
 suite : Test
 suite =
     describe "E2E tests"
-        [ test "Example works to generate decoder for" <|
+        ((test "Example works to generate decoder for" <|
             \_ ->
                 let
                     rawFile =
@@ -35,8 +35,8 @@ type alias Test =
 """
                 in
                 case rawFile of
-                    Err _ ->
-                        Expect.fail "Failed to parse source file"
+                    Err e ->
+                        Expect.fail ("Failed to parse source file" ++ Debug.toString e)
 
                     Ok f ->
                         Main.generateDecodersAndEncoders (Dependency.InModule [ "Test" ])
@@ -62,4 +62,89 @@ type alias Test =
                                         )
                                 )
                             |> Maybe.withDefault (Expect.fail "Failed to get data")
-        ]
+         )
+            :: (cases
+                    |> List.map
+                        (\t ->
+                            test ("Creating decoder and encoder from " ++ t ++ " works") <|
+                                \_ ->
+                                    let
+                                        rawFile =
+                                            Parser.parse (baseModule t)
+                                    in
+                                    case rawFile of
+                                        Err e ->
+                                            Expect.fail ("Failed to parse source file" ++ Debug.toString e)
+
+                                        Ok f ->
+                                            Main.generateDecodersAndEncoders (Dependency.InModule [ "Test" ])
+                                                "Foo"
+                                                { typesToGenerate = [ ( InModule [ "Test" ], "Test" ) ]
+                                                , rawFiles = Dict.fromList [ ( [ "Test" ], f ) ]
+                                                , filesContent = Dict.empty
+                                                , generatedTypes = []
+                                                }
+                                                |> (Tuple.first >> .filesContent >> Dict.get [ "Test" ])
+                                                |> (\res ->
+                                                        case res of
+                                                            Just { decoders, encoders } ->
+                                                                case
+                                                                    (decoders ++ encoders)
+                                                                        |> List.filter
+                                                                            (\ff ->
+                                                                                String.contains "UNHANDLED TYPE" ff
+                                                                            )
+                                                                of
+                                                                    [] ->
+                                                                        Expect.pass
+
+                                                                    l ->
+                                                                        Expect.fail ("Decoder or encoder had UNHANDLED types:\n " ++ Debug.toString l)
+
+                                                            Nothing ->
+                                                                Expect.fail "Failed to generate encoders and decoders!"
+                                                   )
+                        )
+               )
+        )
+
+
+types : List String
+types =
+    [ "Bool", "String", "Int", "Float" ]
+
+
+containers : List String
+containers =
+    [ "Set", "Array", "List" ]
+
+
+multiTypeContainers : List String
+multiTypeContainers =
+    [ "Dict" ]
+
+
+multiTypeContainerValidTypes : List String
+multiTypeContainerValidTypes =
+    [ "String", "Int", "Float" ]
+
+
+otherTypes : List String
+otherTypes =
+    [ "Time.Posix" ]
+
+
+cases : List String
+cases =
+    types
+        ++ List.concatMap (\c -> List.map (\t -> c ++ " " ++ t) types) containers
+        ++ List.concatMap (\c -> List.map (\t -> "Dict (" ++ c ++ " " ++ t ++ ") " ++ t) types) containers
+        ++ List.concatMap (\c -> List.map (\t -> c ++ " " ++ t ++ " " ++ t) multiTypeContainerValidTypes) multiTypeContainers
+        ++ List.map (\t -> "Maybe " ++ t) types
+        ++ List.concatMap (\c -> List.map (\t -> "Maybe (" ++ c ++ " " ++ t ++ ")") types) containers
+        ++ otherTypes
+
+
+baseModule : String -> String
+baseModule t =
+    "module Test exposing (..)\n\ntype alias Foo = { a : " ++ t ++ " }"

@@ -330,8 +330,18 @@ genericTypeDecoder type_ annotations =
             in
             ( "Decode.dict" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
+        "Time.Posix" ->
+            ( "Json.Decode.int |> Json.Decode.map Time.millisToPosix", [ ( InModule [ "Time" ], "Time" ) ] )
+
+        "Char" ->
+            -- Char https://github.com/elm/core/issues/1001
+            ( "UNHANDLED TYPE: Char", [] )
+
+        "Result" ->
+            ( "UNHANDLED TYPE: Result", [] )
+
         value ->
-            ( "UNHANDLED TYPE: " ++ value, [] )
+            ( "decode" ++ value, [] )
 
 
 typedDecoder :

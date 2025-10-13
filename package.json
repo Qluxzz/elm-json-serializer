@@ -4,8 +4,8 @@
   "main": "src/Main.js",
   "license": "MIT",
   "scripts": {
-    "start": "elm make src/Main.elm --output=dist/app.js && ./src/Main.js -f example/Model.elm -t Model -o example",
-    "install": "elm make src/Main.elm --optimize --output=dist/app.js",
+    "start": "elm make src/Main.elm --output=dist/app.js && ./Main.js -f ../example/src/Test.elm -t Test -o ../example/src",
+    "install": "elm make src/Main.elm --output=dist/app.js",
     "test": "npx elm-test"
   },
   "dependencies": {

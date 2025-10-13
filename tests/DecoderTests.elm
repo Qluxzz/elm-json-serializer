@@ -1,6 +1,6 @@
 module DecoderTests exposing (..)
 
-import Dependency exposing (Dependency)
+import Dependency exposing (Dependency(..))
 import Elm.Syntax.Node as Node
 import Elm.Syntax.TypeAnnotation exposing (TypeAnnotation(..))
 import Expect
@@ -14,6 +14,7 @@ typeCases =
     , ( ( "Bool", [] ), ( "Decode.bool", [] ) )
     , ( ( "Int", [] ), ( "Decode.int", [] ) )
     , ( ( "Float", [] ), ( "Decode.float", [] ) )
+    , ( ( "Time.Posix", [] ), ( "Json.Decode.int |> Json.Decode.map Time.millisToPosix", [ ( InModule [ "Time" ], "Time" ) ] ) )
     ]
 
 

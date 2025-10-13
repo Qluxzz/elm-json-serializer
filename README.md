@@ -14,6 +14,20 @@ This utility provides an easy way to generate `Json.Encode.Value` generators (i.
 
 # Supported types
 
+- [ ] Char
+
+  Unsupported because converting strings to char doesn't work as expected in Elm https://github.com/elm/core/issues/1001
+
+- [x] Bool
+- [x] Int
+- [x] Float
+- [x] String
+
+- [x] Dict (of all comparable key types (Int, Float, String, List, Set, Array)) Any
+- [x] List Any
+- [x] Array Any
+- [x] Set Any
+
 Right now, it supports encoders and decoders generation for records and union types, and is able to handle dependencies automatically.  
 Unfortunately, it can't see if one type is opaque or not at this time. Decoders and Encoders will be generated, but they probably won't be usable, unless your types become visible. Such a behavior could seem strange, but in your applications, you're probably writing really few opaque types, and opaque types really shines on elm-package, where it allows to change the internals without changing the public API. But, in reality, you rarely want to send data contained in opaque types over the wire. So it's not a big default today.  
 Furthermore, it can not check into `elm-stuff/` at the time, because most of the time, you don't need to serialize structures from your elm packages to send them to your backend/server. I'll be happy to think about it when a valid use case will be there!

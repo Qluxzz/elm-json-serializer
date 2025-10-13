@@ -214,6 +214,9 @@ genericTypeEncoder recordName fieldName type_ annotations =
         "Bool" ->
             "Encode.bool"
 
+        "Time.Posix" ->
+            "Encode.int << Time.posixToMillis"
+
         "List" ->
             annotationInGenericTypeEncoder recordName fieldName "Encode.list" annotations
 
@@ -243,11 +246,15 @@ genericTypeEncoder recordName fieldName type_ annotations =
                                             "Int" ->
                                                 "String.fromInt"
 
-                                            _ ->
-                                                "Unhandled type"
+                                            "Float" ->
+                                                "String.fromFloat"
 
-                                    _ ->
-                                        "Invalid type"
+                                            -- Char https://github.com/elm/core/issues/1001
+                                            t ->
+                                                "UNHANDLED TYPE: " ++ t
+
+                                    invalid ->
+                                        "INVALID TYPE: " ++ Debug.toString invalid
                             )
                         |> Maybe.withDefault "Invalid key type"
             in
