@@ -33,6 +33,9 @@ jobs:
         with:
           elm-version: 0.19.1
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Install elm-json-serializer
         run: npm install -g .
 
