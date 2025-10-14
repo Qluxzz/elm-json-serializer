@@ -3,16 +3,8 @@ const { Elm } = require("../dist/app.js")
 const app = Elm.Main.init()
 
 const { execSync } = require("child_process")
-const commandExists = require("command-exists").sync
 const fs = require("fs")
 var program = require("commander")
-
-if (!commandExists("elm-format")) {
-  console.error(
-    "Elm Format is not on your path. Install it before using this software please!"
-  )
-  process.exit(1)
-}
 
 program
   .version("0.1.0")
@@ -122,8 +114,8 @@ app.ports.writeFile.subscribe((decoderAndEncoder) => {
     fs.writeFileSync(paths.decoder, decoder)
     fs.writeFileSync(paths.encoder, encoder)
     try {
-      execSync(`elm-format ${paths.decoder} --yes`)
-      execSync(`elm-format ${paths.encoder} --yes`)
+      execSync(`npx elm-format ${paths.decoder} --yes`)
+      execSync(`npx elm-format ${paths.encoder} --yes`)
     } catch (error) {
       console.error(`Elm Format failed, here's why: ${error}`)
       process.exit(1)
