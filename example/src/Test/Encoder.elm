@@ -1,23 +1,23 @@
 module Test.Encoder exposing (..)
 
-import Json.Encode as Encode
-import Serializer.Json.Extra exposing (..)
+import Json.Encode
+import Serializer.Json.Extra
 import Test exposing (..)
 
 
-encodeTest : Test -> Encode.Value
+encodeTest : Test -> Json.Encode.Value
 encodeTest record =
-    Encode.object
-        [ ( "foo", Encode.int record.foo )
-        , ( "bar", Encode.string record.bar )
-        , ( "biz", Encode.dict identity encodeFoo record.biz )
+    Json.Encode.object
+        [ ( "foo", Json.Encode.int record.foo )
+        , ( "bar", Json.Encode.string record.bar )
+        , ( "biz", Json.Encode.dict identity encodeFoo record.biz )
         ]
 
 
-encodeFoo : Foo -> Encode.Value
+encodeFoo : Foo -> Json.Encode.Value
 encodeFoo record =
-    Encode.object
-        [ ( "a", Encode.int record.a )
-        , ( "b", Encode.list Encode.string record.b )
-        , ( "c", Encode.bool record.c )
+    Json.Encode.object
+        [ ( "a", Json.Encode.int record.a )
+        , ( "b", Json.Encode.list Json.Encode.string record.b )
+        , ( "c", Json.Encode.bool record.c )
         ]

@@ -11,8 +11,8 @@ moduleName =
 jsonDecodeExtra : String
 jsonDecodeExtra =
     [ "module " ++ moduleName ++ " exposing (..)"
-    , "import Json.Decode as Decode exposing (Decoder)"
-    , "import Json.Encode as Encode"
+    , "import Json.Decode"
+    , "import Json.Encode"
     , "\n"
     , "\n"
     , andMapFunction
@@ -26,8 +26,8 @@ jsonDecodeExtra =
 
 andMapFunction : String
 andMapFunction =
-    [ "andMap : Decoder a -> Decoder (a -> b) -> Decoder b"
-    , "andMap = Decode.map2 (|>)"
+    [ "andMap : Json.Decode.Decoder a -> Json.Decode.Decoder (a -> b) -> Json.Decode.Decoder b"
+    , "andMap = Json.Decode.map2 (|>)"
     ]
         |> String.Extra.newlineJoin
 
@@ -42,8 +42,8 @@ tupleThreeFunction =
 
 encodeMaybeFunction : String
 encodeMaybeFunction =
-    [ "encodeMaybe : (a -> Encode.Value) -> Maybe a -> Encode.Value"
+    [ "encodeMaybe : (a -> Json.Encode.Value) -> Maybe a -> Json.Encode.Value"
     , "encodeMaybe mapper field ="
-    , "  Maybe.withDefault Encode.null (Maybe.map mapper field)"
+    , "  Maybe.withDefault Json.Encode.null (Maybe.map mapper field)"
     ]
         |> String.Extra.newlineJoin

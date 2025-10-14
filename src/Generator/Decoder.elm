@@ -61,7 +61,7 @@ unionConstructorName name =
         functionName =
             "as" ++ name ++ "Constructor"
     in
-    [ functionName ++ " : Decoder " ++ name
+    [ functionName ++ " : Json.Decode.Decoder " ++ name
     , functionName ++ " value ="
     ]
         |> String.Extra.newlineJoin
@@ -83,7 +83,7 @@ unionConstructor constructors =
         casePlaceholder =
             [ "case value of"
             , constructorCases
-            , String.Extra.indent "_ -> Decode.fail"
+            , String.Extra.indent "_ -> Json.Decode.fail"
             ]
     in
     ( String.Extra.newlineJoin casePlaceholder
@@ -102,7 +102,7 @@ constructorDecoder { name, arguments } =
     ( [ decoderHeader (Node.value name) arguments
       , decoders
             |> List.map Tuple.first
-            |> String.join "|> andMap"
+            |> String.join "|> Serializer.Json.Extra.andMap"
             |> String.Extra.indent
             |> String.Extra.indent
       ]
@@ -114,10 +114,10 @@ constructorDecoder { name, arguments } =
 decoderHeader : String -> List a -> String
 decoderHeader name arguments =
     [ String.Extra.surroundByQuotes name
-    , "-> Decode.succeed"
+    , "-> Json.Decode.succeed"
     , name
     , if List.length arguments > 0 then
-        "|> andMap"
+        "|> Serializer.Json.Extra.andMap"
 
       else
         ""
@@ -146,7 +146,7 @@ putDecodeIndexedField index annotation decoder =
 
 decodeIndexedField : Int -> String
 decodeIndexedField index =
-    [ "Decode.field"
+    [ "Json.Decode.field"
     , index
         |> Shared.indexToFieldName
         |> String.Extra.surroundByQuotes
@@ -160,7 +160,7 @@ putRecordBaseIfNeeded annotation decoder =
         Annotation.Record definition ->
             decoder
                 |> String.append
-                    ("Decode.succeed " ++ anonymousRecord definition ++ "\n|> andMap")
+                    ("Json.Decode.succeed " ++ anonymousRecord definition ++ "\n|> Serializer.Json.Extra.andMap")
                 |> String.Extra.surroundByParen
 
         _ ->
@@ -225,7 +225,7 @@ recordDecoder definition =
         |> List.map Node.value
         |> List.map recordFieldDecoder
         |> flattenTuples
-        |> Tuple.mapFirst (String.join "|> andMap ")
+        |> Tuple.mapFirst (String.join "|> Serializer.Json.Extra.andMap ")
 
 
 recordFieldDecoder :
@@ -239,7 +239,7 @@ recordFieldDecoder ( name, content ) =
 
 recordFieldDecoderString : String -> String -> String
 recordFieldDecoderString name decoder =
-    [ "Decode.field"
+    [ "Json.Decode.field"
     , String.Extra.surroundByQuotes name
     , String.Extra.surroundByParen decoder
     ]
@@ -266,16 +266,16 @@ genericTypeDecoder : String -> List (Node.Node Annotation.TypeAnnotation) -> ( S
 genericTypeDecoder type_ annotations =
     case type_ of
         "String" ->
-            ( "Decode.string", [] )
+            ( "Json.Decode.string", [] )
 
         "Int" ->
-            ( "Decode.int", [] )
+            ( "Json.Decode.int", [] )
 
         "Float" ->
-            ( "Decode.float", [] )
+            ( "Json.Decode.float", [] )
 
         "Bool" ->
-            ( "Decode.bool", [] )
+            ( "Json.Decode.bool", [] )
 
         "List" ->
             let
@@ -285,7 +285,7 @@ genericTypeDecoder type_ annotations =
                         |> List.map typeAnnotationDecoder
                         |> flattenTuples
             in
-            ( "Decode.list" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
+            ( "Json.Decode.list" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
         "Maybe" ->
             let
@@ -295,7 +295,7 @@ genericTypeDecoder type_ annotations =
                         |> List.map typeAnnotationDecoder
                         |> flattenTuples
             in
-            ( "Decode.nullable" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
+            ( "Json.Decode.nullable" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
         "Array" ->
             let
@@ -305,7 +305,7 @@ genericTypeDecoder type_ annotations =
                         |> List.map typeAnnotationDecoder
                         |> flattenTuples
             in
-            ( "Decode.array" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
+            ( "Json.Decode.array" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
         "Set" ->
             let
@@ -315,7 +315,7 @@ genericTypeDecoder type_ annotations =
                         |> List.map typeAnnotationDecoder
                         |> flattenTuples
             in
-            ( "Decode.map (Array.toList >> Set.fromList) " ++ String.Extra.surroundByParen ("Decode.array" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_)), dependencies )
+            ( "Json.Decode.map (Array.toList >> Set.fromList) " ++ String.Extra.surroundByParen ("Json.Decode.array" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_)), dependencies )
 
         "Dict" ->
             let
@@ -328,7 +328,7 @@ genericTypeDecoder type_ annotations =
                         |> List.map typeAnnotationDecoder
                         |> flattenTuples
             in
-            ( "Decode.dict" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
+            ( "Json.Decode.dict" ++ String.Extra.surroundByParen (String.Extra.spaceJoin annotations_), dependencies )
 
         "Time.Posix" ->
             ( "Json.Decode.int |> Json.Decode.map Time.millisToPosix", [ ( InModule [ "Time" ], "Time" ) ] )
@@ -403,7 +403,7 @@ tupledDecoder annotations =
 
 tupleFieldDecoder : Int -> String -> String
 tupleFieldDecoder index value =
-    [ "Decode.field"
+    [ "Json.Decode.field"
     , index
         |> String.fromInt
         |> String.Extra.surroundByQuotes
@@ -418,10 +418,10 @@ addTupleMapper annotations =
     String.append <|
         case List.length annotations of
             2 ->
-                "Decode.map Tuple.pair"
+                "Json.Decode.map Tuple.pair"
 
             3 ->
-                "Decode.map tupleThree"
+                "Json.Decode.map tupleThree"
 
             _ ->
                 "We should add more cases here..."
@@ -429,7 +429,7 @@ addTupleMapper annotations =
 
 addDecoderPipelineStructure : String -> String -> String
 addDecoderPipelineStructure name decoder =
-    [ [ "Decode.succeed", name, String.Extra.newline "|> andMap" ]
+    [ [ "Json.Decode.succeed", name, String.Extra.newline "|> Serializer.Json.Extra.andMap" ]
     , [ decoder ]
     ]
         |> List.map String.Extra.spaceJoin
@@ -443,7 +443,7 @@ encloseInDecoderFunction name decoder =
         functionName =
             "decode" ++ name
     in
-    [ [ functionName, ": Decoder", name ]
+    [ [ functionName, ": Json.Decode.Decoder", name ]
     , [ functionName, "=" ]
     , [ String.Extra.indent decoder ]
     ]
@@ -453,10 +453,10 @@ encloseInDecoderFunction name decoder =
 
 baseUnionDecoder : String -> String
 baseUnionDecoder name =
-    [ "Decode.andThen" ++ " as" ++ name ++ "Constructor"
-    , [ "Decode.field"
+    [ "Json.Decode.andThen" ++ " as" ++ name ++ "Constructor"
+    , [ "Json.Decode.field"
       , String.Extra.surroundByQuotes "type"
-      , "Decode.string"
+      , "Json.Decode.string"
       ]
         |> String.Extra.spaceJoin
         |> String.Extra.surroundByParen

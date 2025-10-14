@@ -10,10 +10,10 @@ import Test exposing (Test, describe, test)
 
 typeCases : List ( ( String, List (Node.Node TypeAnnotation) ), ( String, List ( Dependency, String ) ) )
 typeCases =
-    [ ( ( "String", [] ), ( "Decode.string", [] ) )
-    , ( ( "Bool", [] ), ( "Decode.bool", [] ) )
-    , ( ( "Int", [] ), ( "Decode.int", [] ) )
-    , ( ( "Float", [] ), ( "Decode.float", [] ) )
+    [ ( ( "String", [] ), ( "Json.Decode.string", [] ) )
+    , ( ( "Bool", [] ), ( "Json.Decode.bool", [] ) )
+    , ( ( "Int", [] ), ( "Json.Decode.int", [] ) )
+    , ( ( "Float", [] ), ( "Json.Decode.float", [] ) )
     , ( ( "Time.Posix", [] ), ( "Json.Decode.int |> Json.Decode.map Time.millisToPosix", [ ( InModule [ "Time" ], "Time" ) ] ) )
     ]
 

@@ -1,21 +1,21 @@
 module Test.Decoder exposing (..)
 
-import Json.Decode as Decode exposing (Decoder)
-import Serializer.Json.Extra exposing (..)
+import Json.Decode
+import Serializer.Json.Extra
 import Test exposing (..)
 
 
-decodeTest : Decoder Test
+decodeTest : Json.Decode.Decoder Test
 decodeTest =
-    Decode.succeed Test
-        |> andMap (Decode.field "foo" Decode.int)
-        |> andMap (Decode.field "bar" Decode.string)
-        |> andMap (Decode.field "biz" (Decode.dict decodeFoo))
+    Json.Decode.succeed Test
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "foo" Json.Decode.int)
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "bar" Json.Decode.string)
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "biz" (Json.Decode.dict decodeFoo))
 
 
-decodeFoo : Decoder Foo
+decodeFoo : Json.Decode.Decoder Foo
 decodeFoo =
-    Decode.succeed Foo
-        |> andMap (Decode.field "a" Decode.int)
-        |> andMap (Decode.field "b" (Decode.list Decode.string))
-        |> andMap (Decode.field "c" Decode.bool)
+    Json.Decode.succeed Foo
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "a" Json.Decode.int)
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "b" (Json.Decode.list Json.Decode.string))
+        |> Serializer.Json.Extra.andMap (Json.Decode.field "c" Json.Decode.bool)

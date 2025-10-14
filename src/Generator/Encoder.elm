@@ -11,7 +11,7 @@ import String.Extra
 
 aliasDeclEncoder : String -> Alias.TypeAlias -> String
 aliasDeclEncoder recordName { name, typeAnnotation } =
-    [ "Encode.object"
+    [ "Json.Encode.object"
     , typeAnnotation
         |> Node.value
         |> typeAnnotationEncoder recordName ""
@@ -27,7 +27,7 @@ generateAliasEncoder ({ name } as declaration) =
         functionName =
             "encode" ++ Node.value name
     in
-    [ [ functionName, ":", Node.value name, "-> Encode.Value" ]
+    [ [ functionName, ":", Node.value name, "-> Json.Encode.Value" ]
     , [ functionName, "record =" ]
     , [ String.Extra.indent (aliasDeclEncoder "record" declaration) ]
     ]
@@ -41,7 +41,7 @@ generateTypedEncoder ({ name } as type_) =
         functionName =
             "encode" ++ Node.value name
     in
-    [ [ functionName, ":", Node.value name, "-> Encode.Value" ]
+    [ [ functionName, ":", Node.value name, "-> Json.Encode.Value" ]
     , [ functionName, "record =" ]
     , [ String.Extra.indent (generateTypedEncoderHelp type_) ]
     ]
@@ -82,7 +82,7 @@ constructorBodyEncoder : Type.ValueConstructor -> String
 constructorBodyEncoder { name, arguments } =
     [ [ String.Extra.surroundByQuotes "type"
       , ","
-      , "Encode.string"
+      , "Json.Encode.string"
       , String.Extra.surroundByQuotes (Node.value name)
       ]
         |> String.Extra.spaceJoin
@@ -98,7 +98,7 @@ constructorBodyEncoder { name, arguments } =
 
 constructorEncoder : Type.ValueConstructor -> String
 constructorEncoder ({ name, arguments } as type_) =
-    [ "Encode.object"
+    [ "Json.Encode.object"
     , constructorBodyEncoder type_
     ]
         |> List.map String.Extra.indent
@@ -128,7 +128,7 @@ encloseArgumentBody fieldName annotation =
     String.Extra.spaceJoin <|
         case annotation of
             Annotation.Record definition ->
-                [ "Encode.object", String.Extra.surroundByBrackets annotationEncoderBody ]
+                [ "Json.Encode.object", String.Extra.surroundByBrackets annotationEncoderBody ]
 
             Annotation.GenericType type_ ->
                 [ annotationEncoderBody, fieldName ]
@@ -174,7 +174,7 @@ tupleEncoder recordName fieldName annotations =
         |> List.indexedMap (tupleFieldEncoder recordName fieldName)
         |> String.join "\n, "
         |> String.Extra.surroundByBrackets
-        |> String.append "Encode.object"
+        |> String.append "Json.Encode.object"
 
 
 tupleFieldEncoder : String -> String -> Int -> String -> String
@@ -203,31 +203,31 @@ genericTypeEncoder : String -> String -> String -> List (Node.Node Annotation.Ty
 genericTypeEncoder recordName fieldName type_ annotations =
     case type_ of
         "String" ->
-            "Encode.string"
+            "Json.Encode.string"
 
         "Int" ->
-            "Encode.int"
+            "Json.Encode.int"
 
         "Float" ->
-            "Encode.float"
+            "Json.Encode.float"
 
         "Bool" ->
-            "Encode.bool"
+            "Json.Encode.bool"
 
         "Time.Posix" ->
-            "Encode.int << Time.posixToMillis"
+            "Json.Encode.int << Time.posixToMillis"
 
         "List" ->
-            annotationInGenericTypeEncoder recordName fieldName "Encode.list" annotations
+            annotationInGenericTypeEncoder recordName fieldName "Json.Encode.list" annotations
 
         "Maybe" ->
             annotationInGenericTypeEncoder recordName fieldName "encodeMaybe" annotations
 
         "Array" ->
-            annotationInGenericTypeEncoder recordName fieldName "Encode.array" annotations
+            annotationInGenericTypeEncoder recordName fieldName "Json.Encode.array" annotations
 
         "Set" ->
-            annotationInGenericTypeEncoder recordName fieldName "Encode.set" annotations
+            annotationInGenericTypeEncoder recordName fieldName "Json.Encode.set" annotations
 
         "Dict" ->
             let
@@ -258,7 +258,7 @@ genericTypeEncoder recordName fieldName type_ annotations =
                             )
                         |> Maybe.withDefault "Invalid key type"
             in
-            [ "Encode.dict"
+            [ "Json.Encode.dict"
             , keyTypeToString
             , annotationInGenericTypeEncoder recordName fieldName "" (List.drop 1 annotations)
             ]

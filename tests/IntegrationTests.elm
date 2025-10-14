@@ -50,11 +50,11 @@ type alias Test =
                             |> Maybe.map
                                 (\{ decoders, encoders } ->
                                     Expect.equal
-                                        ( [ "decodeFoo : Decoder Foo\ndecodeFoo =\n (Decode.succeed Foo \n|> andMap (Decode.field \"a\" (Decode.int))|> andMap (Decode.field \"b\" (Decode.list(Decode.string)))|> andMap (Decode.field \"c\" (Decode.bool)))"
-                                          , "decodeTest : Decoder Test\ndecodeTest =\n (Decode.succeed Test \n|> andMap (Decode.field \"foo\" (Decode.int))|> andMap (Decode.field \"bar\" (Decode.string))|> andMap (Decode.field \"biz\" (Decode.dict(decodeFoo))))"
+                                        ( [ "decodeFoo : Json.Decode.Decoder Foo\ndecodeFoo =\n (Json.Decode.succeed Foo \n|> andMap (Json.Decode.field \"a\" (Json.Decode.int))|> andMap (Json.Decode.field \"b\" (Json.Decode.list(Json.Decode.string)))|> andMap (Json.Decode.field \"c\" (Json.Decode.bool)))"
+                                          , "decodeTest : Json.Decode.Decoder Test\ndecodeTest =\n (Json.Decode.succeed Test \n|> andMap (Json.Decode.field \"foo\" (Json.Decode.int))|> andMap (Json.Decode.field \"bar\" (Json.Decode.string))|> andMap (Json.Decode.field \"biz\" (Json.Decode.dict(decodeFoo))))"
                                           ]
-                                        , [ "encodeFoo : Foo -> Encode.Value\nencodeFoo record =\n (Encode.object [(\"a\", (Encode.int record.a))\n, (\"b\", (Encode.list(Encode.string) record.b))\n, (\"c\", (Encode.bool record.c))])"
-                                          , "encodeTest : Test -> Encode.Value\nencodeTest record =\n (Encode.object [(\"foo\", (Encode.int record.foo))\n, (\"bar\", (Encode.string record.bar))\n, (\"biz\", (Encode.dict identity (encodeFoo) record.biz))])"
+                                        , [ "encodeFoo : Foo -> Json.Encode.Value\nencodeFoo record =\n (Json.Encode.object [(\"a\", (Json.Encode.int record.a))\n, (\"b\", (Json.Encode.list(Json.Encode.string) record.b))\n, (\"c\", (Json.Encode.bool record.c))])"
+                                          , "encodeTest : Test -> Json.Encode.Value\nencodeTest record =\n (Json.Encode.object [(\"foo\", (Json.Encode.int record.foo))\n, (\"bar\", (Json.Encode.string record.bar))\n, (\"biz\", (Json.Encode.dict identity (encodeFoo) record.biz))])"
                                           ]
                                         )
                                         ( decoders

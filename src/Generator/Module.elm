@@ -36,12 +36,12 @@ addModuleName rawFiles dependencies moduleName decoder content =
             Decoder ->
                 GenerationRequirements
                     "Decoder"
-                    "Json.Decode as Decode exposing (Decoder)"
+                    "Json.Decode"
 
             Encoder ->
                 GenerationRequirements
                     "Encoder"
-                    "Json.Encode as Encode"
+                    "Json.Encode"
 
 
 type alias GenerationRequirements =
@@ -107,7 +107,6 @@ importDependency name decoder =
                 Encoder ->
                     "Encoder"
            )
-    , "exposing (..)"
     ]
         |> String.Extra.spaceJoin
         |> List.singleton
@@ -118,7 +117,7 @@ generateFileContent moduleName imports content { moduleNamespace, imported } =
     [ moduleGeneration (String.join "." moduleName) moduleNamespace
     , String.Extra.spaceJoin [ "import", imported ]
     , String.Extra.spaceJoin [ "import", String.join "." moduleName, "exposing (..)" ]
-    , String.Extra.spaceJoin [ "import", Generator.Static.moduleName, "exposing (..)" ]
+    , String.Extra.spaceJoin [ "import", Generator.Static.moduleName ]
     , imports
     , content
     ]
