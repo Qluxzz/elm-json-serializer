@@ -6,7 +6,6 @@ import Dict exposing (Dict)
 type alias Foo =
     { a : Int
     , b : List String
-    , c : Bool
     }
 
 
