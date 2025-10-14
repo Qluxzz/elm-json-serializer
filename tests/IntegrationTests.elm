@@ -136,12 +136,19 @@ otherTypes =
 
 cases : List String
 cases =
+    -- Base types
     types
+        -- container type
         ++ List.concatMap (\c -> List.map (\t -> c ++ " " ++ t) types) containers
+        -- Dict (container type) type
         ++ List.concatMap (\c -> List.map (\t -> "Dict (" ++ c ++ " " ++ t ++ ") " ++ t) types) containers
+        -- multi-argument-container type type
         ++ List.concatMap (\c -> List.map (\t -> c ++ " " ++ t ++ " " ++ t) multiTypeContainerValidTypes) multiTypeContainers
+        -- Maybe type
         ++ List.map (\t -> "Maybe " ++ t) types
+        -- Maybe (container type)
         ++ List.concatMap (\c -> List.map (\t -> "Maybe (" ++ c ++ " " ++ t ++ ")") types) containers
+        -- Special types
         ++ otherTypes
 
 
