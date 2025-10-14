@@ -22,3 +22,30 @@ jobs:
         with:
           paths: "test-results.xml"
         if: always()
+  
+  test-e2e:
+    name: Run E2E test
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: jorelali/setup-elm@v6
+        with:
+          elm-version: 0.19.1
+
+      - name: Install elm-json-serializer
+        run: npm install -g .
+
+      - name: run generator
+        run: elm-serializer --file example/src/Test.elm --type Test --output example/src
+
+      - name: validate that no files changed (they should have been committed)
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Test differs before and after running the generator, please validate and commit the updated test files!"
+            git status
+            exit 1
+          fi
+
+      
+
